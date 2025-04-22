@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions
 from .models import *
-from accounts.serializers import RegisterSerializer,LoginSerializer,UserProfileSerializer,HealthSerializer
+from accounts.serializers import *
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
@@ -41,25 +41,27 @@ class LoginView(viewsets.ViewSet):
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 
-class UserProfileView(generics.RetrieveUpdateAPIView):
+class UserProfileView(viewsets.ModelViewSet):
     """
     Retrieve and update user profile details.
     """
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user
+    def get_queryset(self):
+        user = self.request.user
+        return User.objects.filter(id=user.id)
 
-class HealthView(generics.RetrieveUpdateAPIView):
-    """
-    Retrieve and update user health details.
-    """
-    serializer_class = HealthSerializer
+class UserHealthView(viewsets.ModelViewSet):
+    serializer_class = UserHealthSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self):
-        return self.request.user.userhealth
+    def get_queryset(self):
+        user = self.request.user
+        return UserHealth.objects.filter(user=user)
+    
+
+    
     
     
     

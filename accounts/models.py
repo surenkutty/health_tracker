@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-class ConstumUser(AbstractUser):
+class ConstomUser(AbstractUser):
     email= models.EmailField(unique=True)
     phone = models.CharField(max_length=13)
     address = models.TextField()
@@ -13,9 +13,8 @@ class ConstumUser(AbstractUser):
         return self.username
     
 
-
 class UserHealth(models.Model):
-    user = models.OneToOneField(ConstumUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(ConstomUser, on_delete=models.CASCADE)
     age = models.PositiveIntegerField(null=True, blank=True)
     weight = models.FloatField(null=True, blank=True)
     daily_calorie_limit = models.PositiveIntegerField(default=2000)

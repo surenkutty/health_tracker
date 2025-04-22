@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserHealth,ConstumUser
+from .models import UserHealth,ConstomUser
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
@@ -70,7 +70,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return instance
 
 class UserHealthSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=ConstumUser.objects.all())
+    user = serializers.PrimaryKeyRelatedField(queryset=ConstomUser.objects.all())
 
     class Meta:
         model = UserHealth

@@ -57,7 +57,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'health_tracker.urls'
-AUTH_USER_MODEL='accounts.CustomUser'
+AUTH_USER_MODEL='accounts.ConstomUser'
 
 TEMPLATES = [
     {
