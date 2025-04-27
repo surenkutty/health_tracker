@@ -1,12 +1,12 @@
 from django.db import models
 from django.conf import settings
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
         return self.name
-
 
 class Food(models.Model):
     name = models.CharField(max_length=200)
@@ -19,7 +19,6 @@ class Food(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class FoodLog(models.Model):
     MEAL_CHOICES = [
@@ -36,7 +35,6 @@ class FoodLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.meal_type} - {self.food.name}"
-
 
 class Routine(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='routines')
