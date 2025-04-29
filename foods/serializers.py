@@ -16,6 +16,13 @@ class FoodSerializer(serializers.ModelSerializer):
         model = Food
         fields = ['id', 'name', 'image', 'category', 'category_id', 'calories', 'protein', 'carbs', 'fats']
 
+
+
+class FoodCalculationSerializer(serializers.Serializer):
+    food_name = serializers.CharField(max_length=200)
+    quantity = serializers.FloatField(min_value=0.1)
+
+
 class FoodLogSerializer(serializers.ModelSerializer):
     food = FoodSerializer(read_only=True)
     food_id = serializers.PrimaryKeyRelatedField(
@@ -40,3 +47,13 @@ class RoutineSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+
+
+
+class FoodBulkUploadSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    category = serializers.CharField(max_length=100)
+    calories = serializers.FloatField()
+    protein = serializers.FloatField(required=False, default=0)
+    carbs = serializers.FloatField(required=False, default=0)
+    fats = serializers.FloatField(required=False, default=0)

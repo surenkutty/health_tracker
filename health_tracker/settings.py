@@ -152,6 +152,14 @@ REST_FRAMEWORK = {
     ],
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        # ...
+    ),
+}
+
+
 DEEPSEEK_API_KEY = config("DEEPSEEK_API_KEY")
 
 MEDIA_URL = '/media/'

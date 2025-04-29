@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions
 from .models import Category, Food, FoodLog, Routine
-from .serializers import CategorySerializer, FoodSerializer, FoodLogSerializer, RoutineSerializer
+from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from django.db.models import Sum, F,Count
 from collections import defaultdict
 from datetime import datetime,timedelta
+from rest_framework import status, filters
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -22,11 +23,42 @@ class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name'] 
+    @action(detail=False, methods=['post'], serializer_class=FoodCalculationSerializer)
+    def calculate_nutrition(self, request):
+        """
+        Calculate the nutrition details based on food name and quantity.
+        """
+        serializer = FoodCalculationSerializer(data=request.data)
+        if serializer.is_valid():
+            food_name = serializer.validated_data['food_name']
+            quantity = serializer.validated_data['quantity']
+
+            try:
+                food = Food.objects.get(name__iexact=food_name)
+            except Food.DoesNotExist:
+                return Response({'error': 'Food not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Calculate the nutrition based on quantity
+            result = {
+                "food": food.name,
+                "quantity": quantity,
+                "calories": round(food.calories * quantity, 2),
+                "protein": round((food.protein or 0) * quantity, 2),
+                "carbs": round((food.carbs or 0) * quantity, 2),
+                "fats": round((food.fats or 0) * quantity, 2)
+            }
+
+            return Response(result, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FoodLogViewSet(viewsets.ModelViewSet):
     queryset = FoodLog.objects.all()
     serializer_class = FoodLogSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['food__name']  
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
@@ -96,30 +128,30 @@ class FoodLogViewSet(viewsets.ModelViewSet):
             .order_by('-times_eaten')[:5]  # Top 5 foods
 
         return Response(foods)
-    @action(detail=False, methods=['get'])
-    def goal_progress(self, request):
-        """Calories goal vs achieved today"""
-        today = datetime.today().date()
-        logs = FoodLog.objects.filter(user=request.user, date=today)
-
-        total_calories = logs.aggregate(
-            total=Sum(F('quantity') * F('food__calories'))
-        )['total'] or 0
-
-        user_details = request.user.userdetails  # assuming OneToOne with UserDetails
-        daily_goal = user_details.daily_calorie_limit
-
-        percentage = (total_calories / daily_goal) * 100 if daily_goal else 0
-
-        return Response({
-            'goal': daily_goal,
-            'achieved': total_calories,
-            'percentage': round(percentage, 2)
-        })
 
 
 
+    
+    # @action(detail=False, methods=['get'])
+    # def goal_progress(self, request):
+    #     """Calories goal vs achieved today"""
+    #     today = datetime.today().date()
+    #     logs = FoodLog.objects.filter(user=request.user, date=today)
 
+    #     total_calories = logs.aggregate(
+    #         total=Sum(F('quantity') * F('food__calories'))
+    #     )['total'] or 0
+
+    #     user_details = request.user  # assuming OneToOne with UserDetails
+    #     daily_goal = user_details.daily_calorie_limit
+
+    #     percentage = (total_calories / daily_goal) * 100 if daily_goal else 0
+
+    #     return Response({
+    #         'goal': daily_goal,
+    #         'achieved': total_calories,
+    #         'percentage': round(percentage, 2)
+    #     })
 
 
 
@@ -178,4 +210,30 @@ class AIChatView(APIView):
 
         return Response({"reply": reply})
 
+
+class FoodBulkUploadAPIView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        serializer = FoodBulkUploadSerializer(data=request.data.get("foods", []), many=True)
+        if serializer.is_valid():
+            created = []
+            for item in serializer.validated_data:
+                category_name = item["category"]
+                category, _ = Category.objects.get_or_create(
+                    name=category_name, 
+                    defaults={"slug": category_name.lower().replace(" ", "-")}
+                )
+
+                food = Food.objects.create(
+                    name=item["name"],
+                    category=category,
+                    calories=item["calories"],
+                    protein=item.get("protein", 0),
+                    carbs=item.get("carbs", 0),
+                    fats=item.get("fats", 0)
+                )
+                created.append(food.name)
+            return Response({"message": "Foods uploaded", "created": created}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
