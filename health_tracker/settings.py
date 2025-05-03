@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -160,7 +162,6 @@ REST_FRAMEWORK = {
 }
 
 
-DEEPSEEK_API_KEY = config("DEEPSEEK_API_KEY")
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -175,3 +176,23 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+
+# Admin customization
+ADMIN_SITE_HEADER = 'SurendKumar Admdin'
+ADMIN_SITE_TITLE = 'CuteThamizha'
+# ADMIN_SITE_LOGO = '/path/to/your/logo.png'  
+
+
+UNFOLD_ADMIN_SIDEBAR = {
+    'home': {
+        'icon': 'mdi mdi-home',
+        'url': '/admin/',
+    },
+    'my_custom_model': {
+        'icon': 'mdi mdi-food',
+        'url': '/admin/foods/food/',
+    },
+    
+}
+
