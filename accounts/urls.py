@@ -6,10 +6,11 @@ router = DefaultRouter()
 router.register('register',RegistrationView,basename='register')
 router.register('login',LoginView,basename='login')
 router.register('health',UserHealthView,basename='health')
-router.register('profile',UserProfileView,basename='profile')
+
 
 
 urlpatterns = [
     path('',include(router.urls)),
+    path('profile/',UserProfileView.as_view(),name='profile')
  
 ]

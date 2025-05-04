@@ -47,22 +47,27 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['email']
 
     def validate(self, data):
-        # Ensure both new_password and confirm_password match
-        if 'new_password' in data and 'confirm_password' in data:
-            if data['new_password'] != data['confirm_password']:
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+
+        if new_password or confirm_password:
+            if not new_password or not confirm_password:
+                raise serializers.ValidationError("Both new_password and confirm_password are required to change password.")
+            if new_password != confirm_password:
                 raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+
         return data
 
     def update(self, instance, validated_data):
-        # Update user fields
-        instance.username = validated_data.get('username', instance.username)
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.phone = validated_data.get('phone', instance.phone)
-        instance.address = validated_data.get('address', instance.address)
+        # Remove password fields from validated_data to avoid issues
+        new_password = validated_data.pop('new_password', None)
+        validated_data.pop('confirm_password', None)
 
-        # Handle password change
-        new_password = validated_data.get('new_password', None)
+        # Update profile fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        # Set new password securely
         if new_password:
             instance.set_password(new_password)
 

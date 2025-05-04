@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from django.shortcuts import render
+from rest_framework.views import APIView
+
 from rest_framework import viewsets
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions
@@ -41,16 +42,16 @@ class LoginView(viewsets.ViewSet):
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 
-class UserProfileView(viewsets.ModelViewSet):
+class UserProfileView(generics.RetrieveUpdateAPIView):
     """
     Retrieve and update user profile details.
     """
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        return User.objects.filter(id=user.id)
+    def get_object(self):
+        return self.request.user
+
 
 class UserHealthView(viewsets.ModelViewSet):
     serializer_class = UserHealthSerializer
