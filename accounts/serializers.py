@@ -75,9 +75,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return instance
 
 class UserHealthSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=ConstomUser.objects.all())
+    user = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = UserHealth
-        fields = ['user', 'age', 'weight', 'daily_calorie_limit']
+        fields = ['id','user', 'age', 'weight', 'daily_calorie_limit']
+
+
+# class UserHealthSerializer(serializers.ModelSerializer):
+#     user = serializers.PrimaryKeyRelatedField(queryset=ConstomUser.objects.all())
+
+#     class Meta:
+#         model = UserHealth
+#         fields = ['user', 'age', 'weight', 'daily_calorie_limit']
 

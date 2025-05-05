@@ -18,6 +18,9 @@ class UserHealth(models.Model):
     age = models.PositiveIntegerField(null=True, blank=True)
     weight = models.FloatField(null=True, blank=True)
     daily_calorie_limit = models.PositiveIntegerField(default=2000)
+    @property
+    def user_email(self):
+        return self.user.email
 
 
     def __str__(self):

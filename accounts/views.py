@@ -56,10 +56,19 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 class UserHealthView(viewsets.ModelViewSet):
     serializer_class = UserHealthSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
 
     def get_queryset(self):
         user = self.request.user
         return UserHealth.objects.filter(user=user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user != request.user:
+            return Response({"detail": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        return super().partial_update(request, *args, **kwargs)
     
 
     
