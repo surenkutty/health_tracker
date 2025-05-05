@@ -76,6 +76,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserHealthSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username', read_only=True)
+    
 
     class Meta:
         model = UserHealth
