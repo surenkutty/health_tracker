@@ -5,11 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-<<<<<<< HEAD
-=======
-import requests
-
->>>>>>> 15348a913ea121b89886f8a7199d8f907394e6f9
 from rest_framework.decorators import action
 from django.db.models import Sum, F,Count
 from collections import defaultdict
