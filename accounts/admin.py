@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from unfold.admin import ModelAdmin
-from unfold.contrib.filters.admin import RelatedDropdownFilter
+from django.contrib.admin import ModelAdmin
 from .models import ConstomUser, UserHealth
 
 class CustomUserAdmin(UserAdmin):
@@ -25,14 +24,9 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
 
-    filter_horizontal = ('groups', 'user_permissions')
-
-
 @admin.register(UserHealth)
 class UserHealthAdmin(ModelAdmin):
     list_display = ['user', 'age', 'weight', 'daily_calorie_limit']
     search_fields = ['user__username', 'user__email']
-    list_filter = [('user', RelatedDropdownFilter)]
-
 
 admin.site.register(ConstomUser, CustomUserAdmin)
