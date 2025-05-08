@@ -4,7 +4,6 @@ from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
 from rest_framework.decorators import action
 from django.db.models import Sum, F,Count
 from collections import defaultdict
@@ -20,7 +19,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['name'] 
     @action(detail=False, methods=['post'], serializer_class=FoodCalculationSerializer)
@@ -54,7 +53,7 @@ class FoodViewSet(viewsets.ModelViewSet):
 class FoodLogViewSet(viewsets.ModelViewSet):
     queryset = FoodLog.objects.all()
     serializer_class = FoodLogSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     filter_backends = [filters.SearchFilter]
     search_fields = ['food__name']  
 
