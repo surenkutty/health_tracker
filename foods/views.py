@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.db.models import Sum, F,Count
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime,timedelta
 from rest_framework import status, filters
 
@@ -61,7 +61,7 @@ class FoodLogViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(user=self.request.user)
 
     @action(detail=False, methods=['get'])
-    def daily_summary(self, request):
+    def total_summary(self, request):
         date = request.query_params.get('date')
         if not date:
             date = datetime.today().date()
@@ -74,6 +74,67 @@ class FoodLogViewSet(viewsets.ModelViewSet):
             total_fats=Sum(F('quantity') * F('food__fats')),
         )
         return Response({key: value or 0 for key, value in summary.items()})
+
+    @action(detail=False, methods=['get'])
+    def today_meal_summary(self, request):
+        """Summary of today's meals with food details, ordered (breakfast, lunch, snacks, dinner)"""
+        today = datetime.today().date()
+        logs = FoodLog.objects.filter(user=request.user, date=today).select_related('food')
+
+        meal_order = ['breakfast', 'lunch', 'snacks', 'dinner']
+        
+        meal_summary = defaultdict(lambda: {
+            'foods': [],
+            'total_calories': 0,
+            'total_protein': 0,
+            'total_carbs': 0,
+            'total_fats': 0
+        })
+
+        overall_total = {
+            'total_calories': 0,
+            'total_protein': 0,
+            'total_carbs': 0,
+            'total_fats': 0
+        }
+
+        for log in logs:
+            meal_type = log.meal_type.lower()
+
+            calories = (log.food.calories or 0) * log.quantity
+            protein = (log.food.protein or 0) * log.quantity
+            carbs = (log.food.carbs or 0) * log.quantity
+            fats = (log.food.fats or 0) * log.quantity
+
+            meal_summary[meal_type]['foods'].append({
+                'food_name': log.food.name,
+                'quantity': log.quantity,
+                'calories': calories,
+                'protein': protein,
+                'carbs': carbs,
+                'fats': fats,
+            })
+
+            meal_summary[meal_type]['total_calories'] += calories
+            meal_summary[meal_type]['total_protein'] += protein
+            meal_summary[meal_type]['total_carbs'] += carbs
+            meal_summary[meal_type]['total_fats'] += fats
+
+            # Add to overall
+            overall_total['total_calories'] += calories
+            overall_total['total_protein'] += protein
+            overall_total['total_carbs'] += carbs
+            overall_total['total_fats'] += fats
+
+        # Ensure order and fill missing meals as None
+        ordered_meals = OrderedDict()
+        for meal in meal_order:
+            ordered_meals[meal] = meal_summary.get(meal) or None
+
+        return Response({
+            'meals': ordered_meals,
+            'total': overall_total
+        })
 
     @action(detail=False, methods=['get'])
     def history(self, request):

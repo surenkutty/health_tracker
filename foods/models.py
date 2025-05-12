@@ -10,7 +10,6 @@ class Category(models.Model):
 
 class Food(models.Model):
     name = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='food_images/', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='foods')
     calories = models.FloatField()
     protein = models.FloatField(null=True, blank=True)
@@ -31,7 +30,7 @@ class FoodLog(models.Model):
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     meal_type = models.CharField(max_length=20, choices=MEAL_CHOICES)
     date = models.DateField(auto_now_add=True)
-    quantity = models.FloatField(default=1)  # multiplier for nutrition
+    quantity = models.FloatField(default=1)  
 
     def __str__(self):
         return f"{self.user.username} - {self.meal_type} - {self.food.name}"
